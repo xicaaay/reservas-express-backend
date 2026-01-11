@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../config/prisma/prisma.service';
 import { AvailabilityResult } from 'src/common/types/availability/availability.type';
+
 @Injectable()
 export class AvailabilityService {
   constructor(private readonly prisma: PrismaService) {}
@@ -15,8 +16,13 @@ export class AvailabilityService {
         _sum: { quantity: true },
         where: {
           categoryId: category.id,
+
+          // Cruce de fechas
           startDate: { lt: endDate },
           endDate: { gt: startDate },
+
+          // SOLO reservas pagadas
+          status: 'PAID',
         },
       });
 

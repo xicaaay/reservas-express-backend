@@ -1,4 +1,12 @@
-import { Controller, Post, Body, Get, Param, Res } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  Param,
+  Res,
+  NotFoundException,
+} from '@nestjs/common';
 import type { Response } from 'express';
 import { ReservationsService } from './reservations.service';
 import { CreateReservationDto } from 'src/common/dto/reservations/create-reservation.dto';
@@ -11,18 +19,46 @@ export class ReservationsController {
 
   /**
    * Crea una nueva reserva.
-   * Valida disponibilidad, fechas y capacidad.
-   * Devuelve la reserva creada para el frontend.
+   * Valida fechas, disponibilidad y capacidad.
+   * La reserva se crea en estado PENDING.
    */
   @Post()
   async create(@Body() body: CreateReservationDto) {
-    const reservation = await this.reservationsService.createReservation(body);
+    const reservation =
+      await this.reservationsService.createReservation(body);
 
-    // Se envuelve la respuesta para mantener un formato consistente
     return {
       success: true,
       message: 'Reservation created successfully',
       data: reservation,
+    };
+  }
+
+  /**
+   * Obtiene una reserva por su ID.
+   * Este endpoint es usado por el checkout para mostrar el resumen
+   * (email, categoría, cantidad, total, etc.).
+   */
+  @Get(':id')
+  async getById(@Param('id') id: string) {
+    const reservation =
+      await this.reservationsService.getById(id);
+
+    if (!reservation) {
+      throw new NotFoundException(
+        'Reservation not found',
+      );
+    }
+
+    return {
+      id: reservation.id,
+      email: reservation.email,
+      startDate: reservation.startDate,
+      endDate: reservation.endDate,
+      quantity: reservation.quantity,
+      total: reservation.total,
+      status: reservation.status,
+      category: reservation.category.name,
     };
   }
 
@@ -38,14 +74,12 @@ export class ReservationsController {
     const pdfBuffer =
       await this.reservationsService.generateReservationTicket(id);
 
-    // Se configuran los headers para indicar que la respuesta es un archivo PDF descargable
     res.set({
       'Content-Type': 'application/pdf',
       'Content-Disposition': `attachment; filename="reservation-${id}.pdf"`,
       'Content-Length': pdfBuffer.length,
     });
 
-    // Se envía el buffer del PDF como respuesta HTTP
     res.end(pdfBuffer);
   }
 }

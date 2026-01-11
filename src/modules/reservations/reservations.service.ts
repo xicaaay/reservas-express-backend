@@ -9,7 +9,7 @@ import { PdfService } from '../../common/utils/pdf/pdf.service';
 
 @Injectable()
 export class ReservationsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async createReservation(dto: CreateReservationDto) {
     const { email, category, startDate, endDate, quantity } = dto;
@@ -43,10 +43,15 @@ export class ReservationsService {
         _sum: { quantity: true },
         where: {
           categoryId: categoryEntity.id,
+
+          // SOLO reservas confirmadas
+          status: 'PAID',
+
           startDate: { lt: end },
           endDate: { gt: start },
         },
       });
+
 
       const reserved = reservations._sum.quantity ?? 0;
 
@@ -101,4 +106,15 @@ export class ReservationsService {
       total: reservation.total.toNumber(),
     });
   }
+
+  // Obtener reserva por ID
+  async getById(id: string) {
+    return this.prisma.reservation.findUnique({
+      where: { id },
+      include: {
+        category: true,
+      },
+    });
+  }
+
 }
