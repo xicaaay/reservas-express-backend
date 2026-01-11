@@ -576,6 +576,31 @@ curl http://localhost:3000/reservations/{reservationId}/ticket \
   --output reservation-ticket.pdf
 
 ```
+---
+## 📚 Documentación de la API (Swagger)
+
+El proyecto incluye documentación interactiva de la API utilizando **Swagger**, lo que permite explorar, probar y entender los endpoints disponibles sin necesidad de herramientas externas.
+
+Swagger se configura directamente al iniciar la aplicación y se genera automáticamente a partir de los controladores y DTOs del proyecto.
+
+---
+
+### ¿Para qué sirve Swagger en este proyecto?
+
+- Visualizar todos los endpoints disponibles
+- Conocer los parámetros requeridos y opcionales
+- Ver ejemplos de requests y responses
+- Probar la API directamente desde el navegador
+- Facilitar el entendimiento del backend a otros desarrolladores
+
+---
+
+### Acceso a la documentación
+
+Una vez levantado el servidor en entorno local, la documentación estará disponible en:
+
+```text
+http://localhost:3000/api/docs
 
 
 ---
