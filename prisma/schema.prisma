@@ -1,0 +1,39 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model Category {
+  id        String        @id @default(uuid())
+  name      String        @unique
+  capacity  Int
+  price     Decimal
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  reservations Reservation[]
+}
+
+enum ReservationStatus {
+  PENDING
+  PAID
+}
+
+model Reservation {
+  id         String             @id @default(uuid())
+  email      String
+  startDate  DateTime
+  endDate    DateTime
+  quantity   Int
+  total      Decimal
+  status     ReservationStatus  @default(PENDING)
+  createdAt  DateTime           @default(now())
+
+  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId String
+}
