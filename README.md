@@ -209,12 +209,16 @@ A continuación se muestra un ejemplo del archivo de variables de entorno requer
 DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/reservas_express_db"
 
 # ==========================
-# Configuración SMTP (Email)
+# PUERTO
 # ==========================
-SMTP_HOST="smtp.example.com"
-SMTP_PORT=587
-SMTP_USER="user@example.com"
-SMTP_PASS="your_smtp_password"
+PORT=3000
+
+# ==========================
+# Configuración para envío de correos
+# ==========================
+
+SENDGRID_API_KEY=tu-api-key-sendgrid
+MAIL_FROM=example@tu.dominio.com
 ```
 ## 🚀 Inicialización del Proyecto
 
@@ -266,12 +270,12 @@ Para iniciar el backend en modo desarrollo:
 npm run start:dev
 ```
 
-El servidor quedará disponible en: `http://localhost:3000`
+El servidor quedará disponible en: [http://localhost:3000](http://localhost:3000)
 
 ### Verificación de Funcionamiento
 
 Para validar que la aplicación está corriendo correctamente, se puede acceder al url:
-`http://localhost:3000`
+[http://localhost:3000](http://localhost:3000)
 
 ### Mensaje de confirmación
 ```json
