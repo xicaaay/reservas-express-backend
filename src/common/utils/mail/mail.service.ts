@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer';
+import sgMail from '@sendgrid/mail';
 
 export interface SendMailOptions {
   to: string;
@@ -11,19 +11,31 @@ export interface SendMailOptions {
   }[];
 }
 
+/**
+ * Servicio de envío de correos usando SendGrid API (HTTP).
+ * No usa SMTP.
+ * No bloquea el checkout.
+ * Compatible con Railway.
+ */
 export class MailService {
-  private static transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT),
-    secure: false,
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  });
+  private static initialized = false;
 
   /**
-   * Envía un correo con reintentos automáticos.
+   * Inicializa SendGrid una sola vez
+   */
+  private static init() {
+    if (!this.initialized) {
+      if (!process.env.SENDGRID_API_KEY) {
+        throw new Error('SENDGRID_API_KEY is not defined');
+      }
+
+      sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+      this.initialized = true;
+    }
+  }
+
+  /**
+   * Envía un correo con reintentos.
    * No lanza error al caller si todos los intentos fallan.
    */
   static async sendMailWithRetry(
@@ -31,29 +43,38 @@ export class MailService {
     maxRetries = 3,
     delayMs = 1000,
   ): Promise<void> {
+    this.init();
+
     let attempt = 0;
 
     while (attempt < maxRetries) {
       try {
-        await this.transporter.sendMail({
-          from: '"Reservas Express" <no-reply@em6824.indevelop.net>',
+        await sgMail.send({
           to: options.to,
+          from: {
+            email: process.env.MAIL_FROM ?? 'no-reply@em6824.indevelop.net',
+            name: 'Reservas Express',
+          },
           subject: options.subject,
           html: options.html,
-          attachments: options.attachments,
+          attachments: options.attachments?.map((att) => ({
+            filename: att.filename,
+            type: att.contentType ?? 'application/pdf',
+            disposition: 'attachment',
+            content: att.content.toString('base64'),
+          })),
         });
 
-        // Envío exitoso, se sale del loop
+        // Envío exitoso
         return;
       } catch (error) {
         attempt++;
 
         console.error(
-          `Email send failed (attempt ${attempt}/${maxRetries})`,
+          `SendGrid email failed (attempt ${attempt}/${maxRetries})`,
           error,
         );
 
-        // Si ya se alcanzó el máximo de intentos, no se vuelve a lanzar error
         if (attempt >= maxRetries) {
           console.error(
             'Max email retry attempts reached. Email not sent.',
@@ -62,7 +83,9 @@ export class MailService {
         }
 
         // Esperar antes de reintentar
-        await new Promise((resolve) => setTimeout(resolve, delayMs));
+        await new Promise((resolve) =>
+          setTimeout(resolve, delayMs),
+        );
       }
     }
   }
