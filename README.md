@@ -630,16 +630,16 @@ La base de datos es la única fuente de verdad del sistema.
 
 ---
 
-### 📧 Envío de Correos Electrónicos
+### 📧 Envío de Correos Electrónicos (Sendrigd)
 
-El sistema cuenta con un servicio de envío de correos electrónicos para notificaciones al usuario.
+El sistema cuenta con un servicio de envío de correos electrónicos para notificar al usuario una vez que su reserva ha sido confirmada y el pago simulado ha sido procesado correctamente.
 
-Este servicio:
-- Envía correos vía SMTP
-- Permite adjuntar el ticket PDF
-- Utiliza variables de entorno para la configuración
+Funcionamiento técnico
 
-El envío de correos está separado del flujo principal del negocio.
+- El envío de correos se realiza mediante una API externa de correo transaccional
+- El backend consume esta API utilizando peticiones HTTP seguras.
+- La lógica de envío está desacoplada del flujo principal del negocio.
+- Un fallo en el envío del correo no afecta la creación ni la validez de la reserva.
 
 ---
 
